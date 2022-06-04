@@ -43,7 +43,6 @@
 
 
 MXS::MXS(const char *serial_port, unsigned baudrate):ScheduledWorkItem(MODULE_NAME, px4::serial_port_to_wq(serial_port)),
-Device(MODULE_NAME),
 ModuleParams(nullptr)
 
 {
@@ -56,10 +55,10 @@ ModuleParams(nullptr)
 	else
 	{
 		_serial_port = strdup(serial_port);
-		set_device_bus_type(device::Device::DeviceBusType::DeviceBusType_SERIAL);
-		set_device_type(DRV_TRNS_DEVTYPE_MXS);
-		char c = serial_port[strlen(serial_port) - 1]; // last digit of path (eg /dev/ttyS2)
-		set_device_bus(atoi(&c));
+		//set_device_bus_type(device::Device::DeviceBusType::DeviceBusType_SERIAL);
+		//set_device_type(DRV_TRNS_DEVTYPE_MXS);
+		//char c = serial_port[strlen(serial_port) - 1]; // last digit of path (eg /dev/ttyS2)
+		//set_device_bus(atoi(&c));
 	}
 
 
@@ -79,7 +78,7 @@ MXS::~MXS()
 
 int MXS::open_serial_port()
 {
-	//_baudrate = 230400;
+	//_baudrate = 57600;
 	speed_t baud = convert_baudrate(_baudrate);
 	// File descriptor already initialized?
 	if (_file_descriptor > 0) {
@@ -91,7 +90,7 @@ int MXS::open_serial_port()
 	int flags = (O_RDWR | O_NOCTTY | O_NONBLOCK);
 
 	// Open the serial port.
-	//PX4_INFO("Atempting to open port %s with baudrate %d",_serial_port, _baudrate);
+	PX4_INFO("Atempting to open port %s with baudrate %d",_serial_port, _baudrate);
 	_file_descriptor = ::open(_serial_port, flags);
 
 	if (_file_descriptor < 0) {
@@ -154,6 +153,20 @@ int MXS::open_serial_port()
 		return PX4_ERROR;
 	}
 
+	/*struct termios uart_config;
+		int termios_state = -1;
+		tcgetattr(_file_descriptor, &uart_config);
+		uart_config.c_oflag &= ~ONLCR;
+		uart_config.c_cflag &= ~(CSTOPB | PARENB);
+		if (cfsetispeed(&uart_config, baud) < 0 || cfsetospeed(&uart_config, baud) < 0) {
+			//PX4_ERR("ERR SET BAUD %s: %d\n", _file_descriptor, termios_state);
+			px4_close(_file_descriptor);
+		}
+
+		if ((termios_state = tcsetattr(_file_descriptor, TCSANOW, &uart_config)) < 0) {
+			PX4_ERR("baud %d ATTR", termios_state);
+		}
+	*/
 	// Flush the hardware buffers.
 	tcflush(_file_descriptor, TCIOFLUSH);
 
@@ -215,14 +228,14 @@ void MXS::parse_byte(uint8_t data)
 			if (_msgIn.checksum == data)
 			{
 				//handle/build message
-				handle_msg();
+				handle_msg(_msgIn);
 			}
-#ifdef MXS_DEBUG
-			/*else
+//#ifdef MXS_DEBUG
+			else
 			{
 				PX4_INFO("Checksum does not match, internal: %d Read: %d",_msgIn.checksum,  data);
-			}*/
-#endif
+			}
+//#endif
 			_msgIn.state = startByte;
 			break;
 		default:
@@ -259,7 +272,7 @@ int MXS::collect()
 		// read from the sensor (uart buffer)
 		uint8_t data;
 		tcflush(_file_descriptor, TCOFLUSH);
-		ret = ::read(_file_descriptor, &data, sizeof(data));
+		ret = ::read(_file_descriptor, &data, 1);
 
 		if (ret < 0) {
 			PX4_ERR("read err: %d", ret);
@@ -283,21 +296,21 @@ int MXS::collect()
 	return PX4_OK;
 }
 
-void MXS::handle_msg()
+void MXS::handle_msg(sagetech_packet_t &packet)
 {
 	//uint8_t msgIn[255];
 	memset(_buffer,0, sizeof(_buffer));
 	//manual copy
-	_buffer[0] = _msgIn.start;
-	_buffer[1] = _msgIn.type;
-	_buffer[2] = _msgIn.id;
-	_buffer[3] = _msgIn.length;
-	for(int i  = 0; i < _msgIn.length ; i ++)
+	_buffer[0] = packet.start;
+	_buffer[1] = packet.type;
+	_buffer[2] = packet.id;
+	_buffer[3] = packet.length;
+	for(int i  = 0; i < packet.length ; i ++)
 	{
-		_buffer[4 + i] = _msgIn.payload[i];
+		_buffer[4 + i] = packet.payload[i];
 	}
-	_buffer[4 + _msgIn.length] = _msgIn.checksum;
-	_buffer_len = 5 + _msgIn.length;
+	_buffer[4 + packet.length] = packet.checksum;
+	_buffer_len = 5 + packet.length;
 #ifdef MXS_DEBUG
 	for(int i = 0; i < _buffer_len; i ++)
 	{
@@ -307,11 +320,13 @@ void MXS::handle_msg()
 	switch(_msgIn.type)
 	{
 		case SG_MSG_TYPE_ADSB_MSR:
+			PX4_INFO("Build MSR");
 			sg_msr_t msr;
 			sgDecodeMSR(_buffer, &msr);
 			handle_msr(msr);
 			break;
 		case SG_MSG_TYPE_ADSB_SVR:
+			PX4_INFO("Build MSR");
 			sg_svr_t svr;
 			sgDecodeSVR(_buffer, &svr);
 			handle_svr(svr);
@@ -432,9 +447,9 @@ speed_t MXS::convert_baudrate(unsigned baud)
 
 void MXS::handle_svr(sg_svr_t svr)
 {
-#ifdef MXS_DEBUG
+//#ifdef MXS_DEBUG
 	PX4_INFO("Updating SVR transponder message");
-#endif
+//#endif
 
 	if (svr.addrType != svrAdrIcaoUnknown && svr.addrType != svrAdrIcao && svr.addrType != svrAdrIcaoSurface) {
 		return; // invalid icao
@@ -503,9 +518,9 @@ void MXS::handle_svr(sg_svr_t svr)
 
 void MXS::handle_msr(sg_msr_t msr)
 {
-#ifdef MXS_DEBUG
+//#ifdef MXS_DEBUG
 	PX4_INFO("Updating MSR transponder message");
-#endif
+//#endif
 	transponder_report_s t{};
 
 
@@ -535,6 +550,7 @@ int MXS::msg_write(const uint8_t *data, const uint16_t len)
 {
 	int ret = 0;
 	if (_file_descriptor >= 0) {
+		tcflush(_file_descriptor, TCIFLUSH);
 		ret = ::write(_file_descriptor, data, len);
 	}
 	if (ret != len) {
@@ -558,16 +574,11 @@ void MXS::send_data_req(const sg_datatype_t dataReqType)
 
 void MXS::send_flight_id_msg()
 {
-	// TODO: Maybe have a way to set Flight ID in-flight?
-	// if (!strlen((char*) _frontend.out_state.ctrl.callsign)) {
-	// 	return;
-	// }
-	// snprintf(mxs_state.fid.flightId, sizeof(mxs_state.fid.flightId), "%-8s", (char*) _frontend.out_state.ctrl.callsign);
-
 	last.msg.type = SG_MSG_TYPE_HOST_FLIGHT;
 
 	uint8_t txComBuffer[SG_MSG_LEN_FLIGHT] {};
 	sgEncodeFlightId(txComBuffer, &mxs_state.fid, ++last.msg.id);
+	PX4_INFO("Sending flight ID: %s", mxs_state.fid.flightId);
 	msg_write(txComBuffer, SG_MSG_LEN_FLIGHT);
 }
 
@@ -689,7 +700,7 @@ void MXS::send_gps_msg()
 	if (speedKnots > 1000.0)
 	{
 		const float speedOneDec = (speedKnots - int(speedKnots)) * 1.0e1;
-		snprintf(gpsOut.grdSpeed, 7, "%04u%01u", (uint16_t)speedKnots, (uint8_t)speedOneDec);
+		snprintf(gpsOut.grdSpeed, 7, "%04u.%01u", (uint16_t)speedKnots, (uint8_t)speedOneDec);
 	}
 	else
 	{
@@ -709,7 +720,7 @@ void MXS::send_gps_msg()
 	gpsOut.latNorth = (lat>= 0) ? true: false;
 	gpsOut.lngEast = (lon>= 0) ? true: false;
 
-	gpsOut.gpsValid = _gps.vel_ned_valid;
+	gpsOut.gpsValid = (_gps.fix_type >= 2);
 
 	//Convert Time of Fix
 	uint64_t timeUsec = _gps.time_utc_usec;
@@ -746,7 +757,7 @@ void MXS::send_gps_msg()
 	//PX4_INFO("Atempting to write GPS\n");
 	//tcflush(_file_descriptor, TCIFLUSH);
 
-	ret = msg_write( txComBuffer, SG_MSG_LEN_GPS);
+	ret = msg_write( txComBuffer, SG_MSG_LEN_GPS + 1);
 
 	if(ret < 0)
 	{
@@ -1037,5 +1048,6 @@ void MXS::stop()
 
 void MXS:: handle_flight_id(const char *flightId)
 {
-
+	strcpy(mxs_state.fid.flightId,flightId);
+	send_flight_id_msg();
 }

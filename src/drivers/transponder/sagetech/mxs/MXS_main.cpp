@@ -105,7 +105,6 @@ static int stop()
 
 static int flightID(const char *flightId)
 {
-	PX4_INFO("Sending flight ID: %s", flightId);
 	g_dev->handle_flight_id(flightId);
 
 	return PX4_OK;
@@ -137,6 +136,7 @@ $ mxs stop
 	PRINT_MODULE_USAGE_PARAM_STRING('d', "/dev/ttyS1", "<file:dev>", "Sagetech MXS device", true);
 	PRINT_MODULE_USAGE_PARAM_INT('b', 57600, 600, 921600, "Baudrate", true);
 	PRINT_MODULE_USAGE_COMMAND_DESCR("status", "Current status of the Driver");
+	PRINT_MODULE_USAGE_COMMAND_DESCR("flightId", "Change the flight ID, follow this command with desired flight ID as a string");
 	PRINT_MODULE_USAGE_COMMAND_DESCR("stop", "Stop driver");
 	return PX4_OK;
 }
@@ -186,7 +186,7 @@ int mxs_main(int argc, char *argv[])
 		return mxs::status();
 
 	}
-	else if (!strcmp(argv[myoptind], "flightId") && (argc == 3)) {
+	else if (!strcmp(argv[myoptind], "flightId")) {
 		strcpy(ID,argv[2]);
 		return mxs::flightID(ID);
 
