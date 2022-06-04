@@ -166,7 +166,7 @@ typedef struct {
  * Class definition
  *********************************************************************************/
 
-class MXS : public ModuleBase<MXS>,public px4::ScheduledWorkItem ,public device::Device,public ModuleParams
+class MXS : public ModuleBase<MXS>,public px4::ScheduledWorkItem ,public ModuleParams
 {
 public:
 	MXS(const char *serial_port,unsigned baudrate);
@@ -212,7 +212,7 @@ private:
 
 	void parameters_update();
 
-	void handle_msg();
+	void handle_msg(sagetech_packet_t &packet);
 
 	void parse_byte(uint8_t data);
 

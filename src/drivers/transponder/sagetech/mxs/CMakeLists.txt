@@ -71,6 +71,9 @@ px4_add_module(
 		SagetechSDK/uint242Buf.c
 		SagetechSDK/uint322Buf.c
 		SagetechSDK/sgEncodeTargetReq.c
+		SagetechSDK/sgEncodeOperating.c
+		SagetechSDK/sgEncodeDataReq.c
+		SagetechSDK/sgEncodeFlightId.c
 		MXS.cpp
 		MXS.hpp
 		MXS_main.cpp
