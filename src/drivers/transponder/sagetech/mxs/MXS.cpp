@@ -587,7 +587,7 @@ void MXS::send_op_msg()
 	// TODO: Need to convert this over somehow
 	// if (!_frontend.out_state.ctrl.modeAEnabled && !_frontend.out_state.ctrl.modeCEnabled &&
 	// 		!_frontend.out_state.ctrl.modeSEnabled && !_frontend.out_state.ctrl.es1090TxEnabled) {
-	// 	mxs_state.op.opMode = modeStby;
+	//mxs_state.op.opMode = modeStby;
 	// }
 	// if (_frontend.out_state.ctrl.modeAEnabled && !_frontend.out_state.ctrl.modeCEnabled &&
 	// 		_frontend.out_state.ctrl.modeSEnabled && _frontend.out_state.ctrl.es1090TxEnabled) {
@@ -600,7 +600,6 @@ void MXS::send_op_msg()
 	// if ((_frontend.out_state.cfg.rfSelect & 1) == 0) {
 	// 	mxs_state.op.opMode = modeOff;
 	// }
-
 	// mxs_state.op.squawk = AP_ADSB::convert_base_to_decimal(8, last.operating_squawk);
 	// mxs_state.op.emergcType = (sg_emergc_t) _frontend.out_state.ctrl.emergencyState;
 
@@ -636,6 +635,56 @@ void MXS::send_op_msg()
 
 	// mxs_state.op.identOn = _frontend.out_state.ctrl.identActive;
 	// _frontend.out_state.ctrl.identActive = false;                           // only send identButtonActive once per request
+	//Hardcoded
+	mxs_state.op.savePowerUp = true;
+	mxs_state.op.enableSqt = true;
+	mxs_state.op.milEmergency = false;
+	mxs_state.op.emergcType = emergcNone;
+	mxs_state.op.altUseIntrnl = true;
+	mxs_state.op.altHostAvlbl = false;
+	mxs_state.op.altRes25 = false;
+
+	//From GPS
+	mxs_state.op.heading = _gps.cog_rad;
+	mxs_state.op.headingValid = _gps.vel_ned_valid;
+	mxs_state.op.climbRate = (_gps.vel_d_m_s / SAGETECH_SCALE_FEET_TO_M) * 60;
+	mxs_state.op.climbValid = _gps.vel_ned_valid;
+	mxs_state.op.airspd = 0;
+	mxs_state.op.airspdValid = false;
+
+	//Parameter based
+	switch (_mxs_mode.get())
+	{
+	case 0:
+		mxs_state.op.opMode = modeOff;
+		break;
+	case 1:
+		mxs_state.op.opMode = modeOn;
+		break;
+	case 2:
+		mxs_state.op.opMode = modeStby;
+		break;
+	case 3:
+		mxs_state.op.opMode = modeAlt;
+		break;
+	}
+
+	//calculate squawk code
+	uint16_t hold = _mxs_squawk.get();
+	uint8_t thou = hold % 1000;
+	hold = hold -(thou * 1000);
+	uint8_t hund = hold % 100;
+	hold = hold -(hund * 100);
+	uint8_t tens = hold % 10;
+	hold = hold -(tens * 10);
+	uint8_t ones = hold;
+
+	uint16_t squawk = ((thou << 12) | (hund << 8)| (tens << 4)| ones);
+
+	mxs_state.op.squawk = squawk;
+
+	mxs_state.op.identOn = _mxs_ident.get();
+	_mxs_ident.set(0);
 
 	last.msg.type = SG_MSG_TYPE_HOST_OPMSG;
 
@@ -889,6 +938,9 @@ void MXS::Run()
 		if (_landed.landed) {
 			send_gps_msg();
 		}
+
+		//Update parameters
+		parameters_update();
 
 	}
 
