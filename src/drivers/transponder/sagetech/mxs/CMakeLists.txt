@@ -42,6 +42,7 @@ px4_add_module(
 		SagetechSDK/sgDecodeMSR.c
 		SagetechSDK/sgDecodeSVR.c
 		SagetechSDK/sgEncodeGPS.c
+		SagetechSDK/sgDecodeAck.c
 		SagetechSDK/appendChecksum.c
 		SagetechSDK/calcChecksum.c
 		SagetechSDK/charArray2Buf.c

@@ -85,6 +85,8 @@ using namespace time_literals;
 #define SAGETECH_SCALE_KNOTS_TO_M_PER_SEC 				0.514444f
 #define SAGETECH_SCALE_M_PER_SEC_TO_KNOTS				1.94384F
 #define SAGETECH_SCALE_FT_PER_MIN_TO_M_PER_SEC 			0.00508f
+#define SAGETECH_SCALE_MM_TO_FT							0.00328084f
+#define SAGETECH_SCALE_M_PER_SEC_TO_FT_PER_MIN			196.85f
 
 //Altitude
 #define ADSB_ALTITUDE_TYPE_PRESSURE_QNH 				0
@@ -102,6 +104,8 @@ using namespace time_literals;
 #define SAGETECH_HPL_UNKNOWN 							38000.0f
 
 #define MAX_VEHICLES_TRACKED							25
+
+#define	CLIMB_RATE_LIMIT								16448
 
 //Timing
 #define FIVE_HZ_MOD										10
@@ -220,6 +224,8 @@ private:
 
 	void handle_msr(sg_msr_t msr);
 
+	void handle_ack( sg_ack_t ack);
+
 	uint8_t determine_emitter(sg_adsb_emitter_t emit);
 
 	void send_gps_msg();
@@ -256,8 +262,6 @@ private:
 	unsigned			_baudrate{57600};
 
 	int 				_file_descriptor{-1};
-
-	uint8_t 			_msgId{0};
 
 	uint8_t				_buffer[255];
 	uint16_t			_buffer_len{0};
