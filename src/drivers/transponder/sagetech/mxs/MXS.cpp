@@ -149,20 +149,6 @@ int MXS::open_serial_port()
 		return PX4_ERROR;
 	}
 
-	/*struct termios uart_config;
-		int termios_state = -1;
-		tcgetattr(_file_descriptor, &uart_config);
-		uart_config.c_oflag &= ~ONLCR;
-		uart_config.c_cflag &= ~(CSTOPB | PARENB);
-		if (cfsetispeed(&uart_config, baud) < 0 || cfsetospeed(&uart_config, baud) < 0) {
-			//PX4_ERR("ERR SET BAUD %s: %d\n", _file_descriptor, termios_state);
-			px4_close(_file_descriptor);
-		}
-
-		if ((termios_state = tcsetattr(_file_descriptor, TCSANOW, &uart_config)) < 0) {
-			PX4_ERR("baud %d ATTR", termios_state);
-		}
-	*/
 	// Flush the hardware buffers.
 	tcflush(_file_descriptor, TCIOFLUSH);
 
@@ -180,6 +166,12 @@ void MXS::parameters_update()
 		// If any parameter updated, call updateParams() to check if
 		// this class attributes need updating (and do so).
 		updateParams();
+		if((_mxs_targ_num.get() != mxs_state.treq.maxTargets )|| (_mxs_targ_out.get() != mxs_state.treq.transmitPort))
+		{
+			mxs_state.treq.maxTargets = _mxs_targ_num.get();
+			mxs_state.treq.transmitPort = (sg_transmitport_t)_mxs_targ_out.get();
+			send_target_req_msg();
+		}
 	}
 }
 
@@ -679,9 +671,8 @@ void MXS::send_op_msg()
 
 void MXS::send_target_req_msg()
 {
+	//Hardcoded
 	mxs_state.treq.reqType = sg_reporttype_t::reportAuto;
-	mxs_state.treq.transmitPort = sg_transmitport_t::transmitCom1;
-	mxs_state.treq.maxTargets = MAX_VEHICLES_TRACKED;
 	mxs_state.treq.stateVector = true;
 	mxs_state.treq.modeStatus = true;
 	mxs_state.treq.targetState = false;
@@ -690,6 +681,7 @@ void MXS::send_target_req_msg()
 	mxs_state.treq.military = false;
 	mxs_state.treq.commA = false;
 	mxs_state.treq.ownship = true;
+
 
 	last.msg.type = SG_MSG_TYPE_HOST_TARGETREQ;
 
@@ -927,6 +919,9 @@ int MXS::init()
 	_file_descriptor = -1;
 
 	strcpy(mxs_state.fid.flightId,"MXSTEST");
+	last.msg.id = 0;
+	mxs_state.treq.transmitPort = transmitCom1;
+	mxs_state.treq.maxTargets = 25;
 
 	return PX4_OK;
 }

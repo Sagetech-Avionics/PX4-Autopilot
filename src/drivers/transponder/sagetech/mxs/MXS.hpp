@@ -103,7 +103,7 @@ using namespace time_literals;
 #define SAGETECH_VFOM_UNKNOWN 							151.0f
 #define SAGETECH_HPL_UNKNOWN 							38000.0f
 
-#define MAX_VEHICLES_TRACKED							25
+#define MAX_VEHICLES_TRACKED							50
 
 #define	CLIMB_RATE_LIMIT								16448
 
@@ -293,7 +293,9 @@ private:
 	DEFINE_PARAMETERS(
 		(ParamInt<px4::params::MXS_MODE>) _mxs_mode,
 		(ParamInt<px4::params::MXS_SQUAWK>) _mxs_squawk,
-		(ParamInt<px4::params::MXS_IDENT>) _mxs_ident
+		(ParamInt<px4::params::MXS_IDENT>) _mxs_ident,
+		(ParamInt<px4::params::MXS_TARG_NUM>) _mxs_targ_num,
+		(ParamInt<px4::params::MXS_TARG_OUT>) _mxs_targ_out
 	)
 
 	//Publications
