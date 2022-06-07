@@ -80,6 +80,37 @@ PARAM_DEFINE_INT32(MXS_SQUAWK, 1200);
  */
 PARAM_DEFINE_INT32(MXS_IDENT, 0);
 
+/**
+ * Sagetech MXS Participant Configuration
+ *
+ * Adjust the number of participants in the target request message
+ * Adjustment to this value will send a new target request
+ *
+ * @min 0
+ * @max 50
+ * @reboot_required false
+ * @group Sagetech MXS
+ */
+PARAM_DEFINE_INT32(MXS_TARG_NUM, 25);
+
+/**
+ * Sagetech MXS Participant Configuration
+ *
+ * This parameters defines what port to send the target data to
+ * Adjustment to this value will send a new target request
+ * Note: Auto is the port where the target request is received.
+ *
+ * @min 0
+ * @max 2
+ * @reboot_required false
+ * @group Sagetech MXS
+ *
+ * @value 0 Auto
+ * @value 1 COM0
+ * @value 2 COM1
+ */
+PARAM_DEFINE_INT32(MXS_TARG_OUT, 1);
+
 
 
 
