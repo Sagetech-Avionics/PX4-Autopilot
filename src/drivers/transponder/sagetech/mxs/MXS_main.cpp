@@ -187,7 +187,7 @@ int mxs_main(int argc, char *argv[])
 
 	}
 	else if (!strcmp(argv[myoptind], "flightId")) {
-		strcpy(ID,argv[2]);
+		strncpy(ID,argv[2],9);
 		return mxs::flightID(ID);
 
 	}

@@ -47,7 +47,7 @@
  * @reboot_required false
  * @min 0
  * @max 3
- * @group Sagetech MXS
+ * @group Transponder
  *
  * @value 0 Off
  * @value 1 On
@@ -64,7 +64,7 @@ PARAM_DEFINE_INT32(MXS_MODE, 0);
  * @reboot_required false
  * @min 0
  * @max 7777
- * @group Sagetech MXS
+ * @group Transponder
  *
  */
 PARAM_DEFINE_INT32(MXS_SQUAWK, 1200);
@@ -76,7 +76,7 @@ PARAM_DEFINE_INT32(MXS_SQUAWK, 1200);
  *
  * @boolean
  * @reboot_required false
- * @group Sagetech MXS
+ * @group Transponder
  */
 PARAM_DEFINE_INT32(MXS_IDENT, 0);
 
@@ -89,7 +89,7 @@ PARAM_DEFINE_INT32(MXS_IDENT, 0);
  * @min 0
  * @max 50
  * @reboot_required false
- * @group Sagetech MXS
+ * @group Transponder
  */
 PARAM_DEFINE_INT32(MXS_TARG_NUM, 25);
 
@@ -103,7 +103,7 @@ PARAM_DEFINE_INT32(MXS_TARG_NUM, 25);
  * @min 0
  * @max 2
  * @reboot_required false
- * @group Sagetech MXS
+ * @group Transponder
  *
  * @value 0 Auto
  * @value 1 COM0
@@ -111,6 +111,18 @@ PARAM_DEFINE_INT32(MXS_TARG_NUM, 25);
  */
 PARAM_DEFINE_INT32(MXS_TARG_OUT, 1);
 
+/**
+ * Sagetech MXS Baud configuration
+ *
+ * This parameter defines the baud rate for the MXS
+ *
+ * @reboot_required false
+ * @min 0
+ * @max 230400
+ * @group Transponder
+ *
 
+ */
+PARAM_DEFINE_INT32(MXS_BAUD, 0);
 
 

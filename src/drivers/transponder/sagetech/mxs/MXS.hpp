@@ -94,7 +94,6 @@ using namespace time_literals;
 
 #define PAYLOAD_MXS_MAX_SIZE  							255
 #define START_BYTE										0xAA
-#define SAGETECH_PI										3.14159
 #define SAGETECH_USEC_PER_HOUR							3600000000
 #define SAGETECH_USEC_PER_MIN							60000000
 #define SAGETECH_USEC_PER_SEC							1000000
@@ -295,7 +294,9 @@ private:
 		(ParamInt<px4::params::MXS_SQUAWK>) _mxs_squawk,
 		(ParamInt<px4::params::MXS_IDENT>) _mxs_ident,
 		(ParamInt<px4::params::MXS_TARG_NUM>) _mxs_targ_num,
-		(ParamInt<px4::params::MXS_TARG_OUT>) _mxs_targ_out
+		(ParamInt<px4::params::MXS_TARG_OUT>) _mxs_targ_out,
+		(ParamInt<px4::params::MXS_BAUD>) _mxs_baud
+
 	)
 
 	//Publications
