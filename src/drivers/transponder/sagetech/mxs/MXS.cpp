@@ -487,6 +487,20 @@ void MXS::handle_svr(sg_svr_t svr)
 		t.flags |= transponder_report_s::PX4_ADSB_FLAGS_VALID_COORDS;
 	}
 
+	if (svr.validity.geoAlt || svr.validity.baroAlt)
+	{
+		t.flags |= transponder_report_s::PX4_ADSB_FLAGS_VALID_ALTITUDE;
+		if (svr.validity.geoAlt)
+		{
+			t.altitude_type = ADSB_ALTITUDE_TYPE_GEOMETRIC;
+		}
+		else
+		{
+			t.altitude_type = ADSB_ALTITUDE_TYPE_PRESSURE_QNH;
+		}
+
+	}
+
 	if (svr.type == svrAirborne)
 	{
 
@@ -495,13 +509,11 @@ void MXS::handle_svr(sg_svr_t svr)
 			t.flags |= transponder_report_s::PX4_ADSB_FLAGS_VALID_ALTITUDE;
 			if (svr.validity.geoAlt)
 			{
-				t.altitude_type = ADSB_ALTITUDE_TYPE_GEOMETRIC;
 				//Convert from Feet to Meters
 				t.altitude = (svr.airborne.geoAlt * SAGETECH_SCALE_FEET_TO_M);
 			}
 			else
 			{
-				t.altitude_type = ADSB_ALTITUDE_TYPE_PRESSURE_QNH;
 				//Convert from Feet to Meters
 				t.altitude = (svr.airborne.baroAlt * SAGETECH_SCALE_FEET_TO_M);
 			}
@@ -511,7 +523,7 @@ void MXS::handle_svr(sg_svr_t svr)
 		{
 			//Convert from knots to meters/second
 			t.hor_velocity = (svr.airborne.speed * SAGETECH_SCALE_KNOTS_TO_M_PER_SEC);
-			t.heading = svr.airborne.heading;
+			t.heading = matrix::wrap_pi(((float)svr.airborne.heading*-M_PI_F)/180.0f);
 			t.flags |= transponder_report_s::transponder_report_s::PX4_ADSB_FLAGS_VALID_HEADING;
 		}
 		if (svr.validity.baroVRate || svr.validity.geoVRate)
@@ -525,6 +537,16 @@ void MXS::handle_svr(sg_svr_t svr)
 		}
 	}
 
+	if (svr.type == svrSurface) {
+			if (svr.validity.surfSpeed) {
+				t.hor_velocity = svr.surface.speed * SAGETECH_SCALE_KNOTS_TO_M_PER_SEC;
+				t.flags |= transponder_report_s::PX4_ADSB_FLAGS_VALID_VELOCITY;
+			}
+			if (svr.validity.surfHeading) {
+				t.heading = matrix::wrap_pi(((float)svr.surface.heading*-M_PI_F)/180.0f);
+				t.flags |= transponder_report_s::PX4_ADSB_FLAGS_VALID_HEADING;
+			}
+		}
 	handle_vehicle(t);
 }
 
@@ -590,7 +612,6 @@ void MXS::send_flight_id_msg()
 
 	uint8_t txComBuffer[SG_MSG_LEN_FLIGHT] {};
 	sgEncodeFlightId(txComBuffer, &mxs_state.fid, ++last.msg.id);
-	PX4_INFO("Sending flight ID: %s", mxs_state.fid.flightId);
 	msg_write(txComBuffer, SG_MSG_LEN_FLIGHT);
 }
 
@@ -655,12 +676,12 @@ void MXS::send_op_msg()
 	hold = hold -(tens * 10);
 	uint8_t ones = hold;
 
-	uint16_t squawk = ((thou << 12) | (hund << 8)| (tens << 4)| ones);
+	uint16_t squawk = ((thou << 9) | (hund << 6)| (tens << 3)| ones);
 
 	mxs_state.op.squawk = squawk;
 
 	mxs_state.op.identOn = _mxs_ident.get();
-	_mxs_ident.set(0);
+	_mxs_ident.commit_no_notification(0);
 
 	last.msg.type = SG_MSG_TYPE_HOST_OPMSG;
 
@@ -895,10 +916,14 @@ void MXS::print_info()
 {
 	perf_print_counter(_comms_errors);
 	perf_print_counter(_sample_perf);
+	perf_print_counter(_loop_count_perf);
+	perf_print_counter(_loop_elapsed_perf);
+	perf_print_counter(_loop_interval_perf);
 }
 
 int MXS::init()
 {
+	_baudrate = _mxs_baud.get();
 	if (_baudrate == 0)
 	{
 		_baudrate = 230400;
@@ -918,7 +943,7 @@ int MXS::init()
 	::close(_file_descriptor);
 	_file_descriptor = -1;
 
-	strcpy(mxs_state.fid.flightId,"MXSTEST");
+	strncpy(mxs_state.fid.flightId,"MXSTEST",9);
 	last.msg.id = 0;
 	mxs_state.treq.transmitPort = transmitCom1;
 	mxs_state.treq.maxTargets = 25;

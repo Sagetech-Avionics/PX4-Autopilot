@@ -1,6 +1,6 @@
-module_name: Sagtech MXS
+module_name: Transponder
 serial_config:
-    - command: mxs start -d ${SERIAL_DEV} -b p:${BAUD_PARAM}
+    - command: mxs start -d ${SERIAL_DEV}
       port_config_param:
         name: TRANS_MXS_CFG
-        group: Sagetech MXS
+        group: Transponder
