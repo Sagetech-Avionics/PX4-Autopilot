@@ -5,6 +5,7 @@ on:
     branches:
     - 'master'
     - 'pr-sagetech-mxs_faberc'
+
   pull_request:
     branches:
     - '*'

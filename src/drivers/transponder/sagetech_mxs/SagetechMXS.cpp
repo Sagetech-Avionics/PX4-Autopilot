@@ -1134,7 +1134,7 @@ unsigned SagetechMXS::convert_to_px4_baud(int baudType)
 
 	case 8: return B19200;
 
-	case 9: return B460800;
+	case 9: return 0010004;		// B460800 is not defined in MacOS.
 
 	case 10: return B921600;
 
