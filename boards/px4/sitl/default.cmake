@@ -5,6 +5,11 @@ px4_add_board(
 	MODEL sitl
 	LABEL default
 	TESTING
+	# SERIAL_PORTS
+	# 	GPS1:/dev/ttyS3
+	# 	TEL1:/dev/ttyS1
+	# 	TEL2:/dev/ttyS2
+	# 	TEL4:/dev/ttyS6
 	DRIVERS
 		#barometer # all available barometer drivers
 		#batt_smbus
@@ -20,6 +25,8 @@ px4_add_board(
 		#telemetry # all available telemetry drivers
 		tone_alarm
 		#uavcan
+		roboclaw
+		transponder/sagetech_mxs
 	MODULES
 		airspeed_selector
 		attitude_estimator_q

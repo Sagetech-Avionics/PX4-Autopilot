@@ -60,6 +60,7 @@ px4_add_board(
 		test_ppm
 		tone_alarm
 		uavcan
+		transponder/sagetech_mxs
 	MODULES
 		airspeed_selector
 		attitude_estimator_q

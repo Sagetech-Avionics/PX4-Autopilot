@@ -56,6 +56,7 @@ px4_add_board(
 		telemetry # all available telemetry drivers
 		test_ppm
 		tone_alarm
+		transponder/sagetech_mxs
 #		uavcan - No H7 or FD can support in UAVCAN yet
 	MODULES
 		airspeed_selector
