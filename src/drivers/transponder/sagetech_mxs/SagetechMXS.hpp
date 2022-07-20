@@ -129,11 +129,11 @@ private:
 	perf_counter_t	_loop_interval_perf{perf_alloc(PC_INTERVAL, MODULE_NAME": interval")};
 	perf_counter_t  _sample_perf{perf_alloc(PC_ELAPSED, MODULE_NAME": read")};
 	perf_counter_t  _comms_errors{perf_alloc(PC_COUNT, MODULE_NAME": com_err")};
-	perf_counter_t  _comms_svr{perf_alloc(PC_COUNT, MODULE_NAME": com_svr")};
-	perf_counter_t  _comms_msr{perf_alloc(PC_COUNT, MODULE_NAME": com_msr")};
-	perf_counter_t  _comms_gps{perf_alloc(PC_COUNT, MODULE_NAME": com_gps")};
-	perf_counter_t  _comms_fid{perf_alloc(PC_COUNT, MODULE_NAME": com_fid")};
-	perf_counter_t  _comms_op{perf_alloc(PC_COUNT, MODULE_NAME": com_op")};
+	perf_counter_t  _comms_svr_rcv{perf_alloc(PC_COUNT, MODULE_NAME": com_svr_rcv")};
+	perf_counter_t  _comms_msr_rcv{perf_alloc(PC_COUNT, MODULE_NAME": com_msr_rcv")};
+	perf_counter_t  _comms_gps_snt{perf_alloc(PC_COUNT, MODULE_NAME": com_gps_snt")};
+	perf_counter_t  _comms_fid_snt{perf_alloc(PC_COUNT, MODULE_NAME": com_fid_snt")};
+	perf_counter_t  _comms_op_snt{perf_alloc(PC_COUNT, MODULE_NAME": com_op_snt")};
 
 	// Constants
 	static constexpr uint32_t UPDATE_INTERVAL_US{1000000 / 50}; 	// 20ms = 50 Hz
